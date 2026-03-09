@@ -2,7 +2,7 @@
 
 A web application where users try to guess a country based on three clues, with a built-in management panel for adding, editing and deleting countries.
 
-🔗 **Live app:** https://guess-the-country-six.vercel.app
+🔗 **Live app:** https://guess-the-country-sooty.vercel.app/
 
 ## How It Works
 
