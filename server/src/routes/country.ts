@@ -19,10 +19,15 @@ export async function countryRoutes(app: FastifyInstance) {
     }
 
     const skip = Math.floor(Math.random() * count);
-    currentCountry = await prisma.country.findFirst({ skip });
+    const country = await prisma.country.findFirst({ skip });
 
+    if (!country) {
+      return reply.status(503).send({ error: "Failed to retrieve a country." });
+    }
+
+    currentCountry = country;
     return reply.send({
-      clues: [currentCountry!.clue1, currentCountry!.clue2, currentCountry!.clue3],
+      clues: [country.clue1, country.clue2, country.clue3],
     });
   });
 
@@ -40,13 +45,7 @@ export async function countryRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "No active country. Start a new game first." });
     }
 
-    const normalizedGuess = normalizeGuess(guess);
-    const normalizedAnswer = normalizeGuess(currentCountry.name);
-    const correct = normalizedGuess === normalizedAnswer;
-
-    return reply.send({
-      correct,
-      answer: currentCountry.name,
-    });
+    const correct = normalizeGuess(guess) === normalizeGuess(currentCountry.name);
+    return reply.send({ correct, answer: currentCountry.name });
   });
 }

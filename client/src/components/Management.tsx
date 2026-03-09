@@ -1,48 +1,48 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { ChangeEvent } from "react";
 import { API } from "../api";
+import type { Country, CountryFormData } from "../types";
 
-interface Country {
-  id: number;
-  name: string;
-  clue1: string;
-  clue2: string;
-  clue3: string;
-}
-
-interface FormState {
-  name: string;
-  clue1: string;
-  clue2: string;
-  clue3: string;
-}
-
-const emptyForm: FormState = { name: "", clue1: "", clue2: "", clue3: "" };
+const emptyForm: CountryFormData = { name: "", clue1: "", clue2: "", clue3: "" };
 
 export default function Management() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editState, setEditState] = useState<FormState>(emptyForm);
+  const [editState, setEditState] = useState<CountryFormData>(emptyForm);
   const [showAdd, setShowAdd] = useState(false);
-  const [newCountry, setNewCountry] = useState<FormState>(emptyForm);
+  const [newCountry, setNewCountry] = useState<CountryFormData>(emptyForm);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchCountries() {
+  const fetchCountries = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(API.adminCountries);
-    const data = await res.json();
-    setCountries(data);
-    setLoading(false);
-  }
+    setError(null);
+    try {
+      const res = await fetch(API.adminCountries);
+      if (!res.ok) throw new Error("Failed to fetch countries.");
+      const data: Country[] = await res.json();
+      setCountries(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load countries.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchCountries();
-  }, []);
+  }, [fetchCountries]);
 
-  async function handleDelete(id: number, name: string) {
-    if (!confirm(`Delete "${name}"?`)) return;
-    await fetch(`${API.adminCountries}/${id}`, { method: "DELETE" });
-    setCountries((c) => c.filter((x) => x.id !== id));
+  /** Returns a change handler that updates a single field in the edit form. */
+  function updateEdit(field: keyof CountryFormData) {
+    return (e: ChangeEvent<HTMLInputElement>) =>
+      setEditState((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  /** Returns a change handler that updates a single field in the add form. */
+  function updateNew(field: keyof CountryFormData) {
+    return (e: ChangeEvent<HTMLInputElement>) =>
+      setNewCountry((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
   function startEdit(country: Country) {
@@ -56,38 +56,68 @@ export default function Management() {
   }
 
   async function saveEdit(id: number) {
-    const res = await fetch(`${API.adminCountries}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editState),
-    });
-    const updated = await res.json();
-    setCountries((c) => c.map((x) => (x.id === id ? updated : x)));
-    setEditingId(null);
+    setError(null);
+    try {
+      const res = await fetch(`${API.adminCountries}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editState),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "Failed to update country.");
+        return;
+      }
+      const updated: Country = await res.json();
+      setCountries((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      setEditingId(null);
+    } catch {
+      setError("Failed to update country.");
+    }
+  }
+
+  async function handleDelete(id: number, name: string) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    setError(null);
+    try {
+      const res = await fetch(`${API.adminCountries}/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        setError("Failed to delete country.");
+        return;
+      }
+      setCountries((prev) => prev.filter((c) => c.id !== id));
+    } catch {
+      setError("Failed to delete country.");
+    }
   }
 
   async function handleAdd() {
     setError(null);
-    if (!newCountry.name || !newCountry.clue1 || !newCountry.clue2 || !newCountry.clue3) {
+    const { name, clue1, clue2, clue3 } = newCountry;
+    if (!name.trim() || !clue1.trim() || !clue2.trim() || !clue3.trim()) {
       setError("All fields are required.");
       return;
     }
-    const res = await fetch(API.adminCountries, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newCountry),
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Failed to add country.");
-      return;
+    try {
+      const res = await fetch(API.adminCountries, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCountry),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "Failed to add country.");
+        return;
+      }
+      const created: Country = await res.json();
+      setCountries((prev) =>
+        [...prev, created].sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setNewCountry(emptyForm);
+      setShowAdd(false);
+    } catch {
+      setError("Failed to add country.");
     }
-    const created = await res.json();
-    setCountries((c) =>
-      [...c, created].sort((a, b) => a.name.localeCompare(b.name))
-    );
-    setNewCountry(emptyForm);
-    setShowAdd(false);
   }
 
   return (
@@ -101,37 +131,20 @@ export default function Management() {
             setError(null);
           }}
         >
-          {showAdd ? "✕ Cancel" : "+ Add Country"}
+          {showAdd ? "Cancel" : "+ Add Country"}
         </button>
       </div>
+
+      {error && <p className="mgmt-error">{error}</p>}
 
       {showAdd && (
         <div className="mgmt-form">
           <h3>New Country</h3>
-          {error && <p className="mgmt-error">{error}</p>}
-          <input
-            placeholder="Country name"
-            value={newCountry.name}
-            onChange={(e) => setNewCountry({ ...newCountry, name: e.target.value })}
-          />
-          <input
-            placeholder="Clue 1"
-            value={newCountry.clue1}
-            onChange={(e) => setNewCountry({ ...newCountry, clue1: e.target.value })}
-          />
-          <input
-            placeholder="Clue 2"
-            value={newCountry.clue2}
-            onChange={(e) => setNewCountry({ ...newCountry, clue2: e.target.value })}
-          />
-          <input
-            placeholder="Clue 3"
-            value={newCountry.clue3}
-            onChange={(e) => setNewCountry({ ...newCountry, clue3: e.target.value })}
-          />
-          <button className="mgmt-save-btn" onClick={handleAdd}>
-            ✓ Save
-          </button>
+          <input placeholder="Country name" value={newCountry.name} onChange={updateNew("name")} />
+          <input placeholder="Clue 1" value={newCountry.clue1} onChange={updateNew("clue1")} />
+          <input placeholder="Clue 2" value={newCountry.clue2} onChange={updateNew("clue2")} />
+          <input placeholder="Clue 3" value={newCountry.clue3} onChange={updateNew("clue3")} />
+          <button className="mgmt-save-btn" onClick={handleAdd}>Save</button>
         </div>
       )}
 
@@ -144,31 +157,31 @@ export default function Management() {
               <li key={c.id} className="mgmt-row mgmt-row--editing">
                 <input
                   value={editState.name}
-                  onChange={(e) => setEditState({ ...editState, name: e.target.value })}
+                  onChange={updateEdit("name")}
                   placeholder="Country name"
                   className="mgmt-input mgmt-input--name"
                 />
                 <input
                   value={editState.clue1}
-                  onChange={(e) => setEditState({ ...editState, clue1: e.target.value })}
+                  onChange={updateEdit("clue1")}
                   placeholder="Clue 1"
                   className="mgmt-input"
                 />
                 <input
                   value={editState.clue2}
-                  onChange={(e) => setEditState({ ...editState, clue2: e.target.value })}
+                  onChange={updateEdit("clue2")}
                   placeholder="Clue 2"
                   className="mgmt-input"
                 />
                 <input
                   value={editState.clue3}
-                  onChange={(e) => setEditState({ ...editState, clue3: e.target.value })}
+                  onChange={updateEdit("clue3")}
                   placeholder="Clue 3"
                   className="mgmt-input"
                 />
                 <div className="mgmt-row-actions">
-                  <button className="mgmt-save-btn" onClick={() => saveEdit(c.id)}>✓ Save</button>
-                  <button className="mgmt-cancel-btn" onClick={() => setEditingId(null)}>✕</button>
+                  <button className="mgmt-save-btn" onClick={() => saveEdit(c.id)}>Save</button>
+                  <button className="mgmt-cancel-btn" onClick={() => setEditingId(null)}>Cancel</button>
                 </div>
               </li>
             ) : (
@@ -182,8 +195,8 @@ export default function Management() {
                   </ol>
                 </div>
                 <div className="mgmt-row-actions">
-                  <button className="mgmt-edit-btn" onClick={() => startEdit(c)}>✎ Edit</button>
-                  <button className="mgmt-delete-btn" onClick={() => handleDelete(c.id, c.name)}>🗑</button>
+                  <button className="mgmt-edit-btn" onClick={() => startEdit(c)}>Edit</button>
+                  <button className="mgmt-delete-btn" onClick={() => handleDelete(c.id, c.name)}>Delete</button>
                 </div>
               </li>
             )
