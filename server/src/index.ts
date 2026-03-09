@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { countryRoutes } from "./routes/country";
+import { adminRoutes } from "./routes/admin";
 
 const app = Fastify({ logger: true });
 
@@ -13,11 +14,12 @@ async function start() {
 
   await app.register(cors, {
     origin: allowedOrigins,
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   });
 
   // Register routes
   await app.register(countryRoutes);
+  await app.register(adminRoutes);
 
   const port = Number(process.env.PORT) || 3000;
   await app.listen({ port, host: "0.0.0.0" });

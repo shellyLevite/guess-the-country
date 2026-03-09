@@ -5,4 +5,5 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 export const API = {
   country: `${BASE_URL}/api/country`,
   guess: `${BASE_URL}/api/guess`,
+  adminCountries: `${BASE_URL}/api/admin/countries`,
 };

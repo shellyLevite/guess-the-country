@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import ClueCard from "./components/ClueCard";
 import GuessForm from "./components/GuessForm";
+import Management from "./components/Management";
 import { API } from "./api";
 import "./App.css";
 
+type Tab = "game" | "management";
 type GameState = "loading" | "playing" | "correct" | "wrong";
 
 interface GuessResult {
@@ -12,6 +14,7 @@ interface GuessResult {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<Tab>("game");
   const [clues, setClues] = useState<string[]>([]);
   const [gameState, setGameState] = useState<GameState>("loading");
   const [result, setResult] = useState<GuessResult | null>(null);
@@ -49,50 +52,69 @@ export default function App() {
   }
 
   return (
-    <div className="page">
+    <div className={`page ${activeTab === "management" ? "page--manage" : ""}`}>
       <div className="app">
         <div className="app-header">
           <h1>🌍 <span className="title-gradient">Guess The Country</span></h1>
-          <p>Read the clues and name the country</p>
+          <div className="tabs">
+            <button
+              className={`tab ${activeTab === "game" ? "tab--active" : ""}`}
+              onClick={() => setActiveTab("game")}
+            >
+              🎮 Game
+            </button>
+            <button
+              className={`tab ${activeTab === "management" ? "tab--active" : ""}`}
+              onClick={() => setActiveTab("management")}
+            >
+              ⚙️ Manage
+            </button>
+          </div>
         </div>
 
-        {gameState === "loading" && <p className="status">Loading clues…</p>}
-
-        {(gameState === "playing" ||
-          gameState === "correct" ||
-          gameState === "wrong") && (
+        {activeTab === "game" && (
           <>
-            <ClueCard clues={clues} />
+            {gameState === "loading" && <p className="status">Loading clues…</p>}
 
-            <GuessForm
-              onSubmit={handleGuess}
-              disabled={gameState !== "playing"}
-            />
+            {(gameState === "playing" ||
+              gameState === "correct" ||
+              gameState === "wrong") && (
+              <>
+                <ClueCard clues={clues} />
 
-            {gameState === "correct" && (
-              <div className="result-banner correct">
-                <span className="result-icon">🎉</span>
-                <p className="result-text">Correct!</p>
-              </div>
-            )}
+                <GuessForm
+                  onSubmit={handleGuess}
+                  disabled={gameState !== "playing"}
+                />
 
-            {gameState === "wrong" && result && (
-              <div className="result-banner wrong">
-                <span className="result-icon">❌</span>
-                <p className="result-text">Not quite!</p>
-                <p className="result-answer">
-                  The correct answer is <strong>{result.answer}</strong>
-                </p>
-              </div>
-            )}
+                {gameState === "correct" && (
+                  <div className="result-banner correct">
+                    <span className="result-icon">🎉</span>
+                    <p className="result-text">Correct!</p>
+                  </div>
+                )}
 
-            {(gameState === "correct" || gameState === "wrong") && (
-              <button className="new-game-btn" onClick={fetchCountry}>
-                🔄 Play Again
-              </button>
+                {gameState === "wrong" && result && (
+                  <div className="result-banner wrong">
+                    <span className="result-icon">❌</span>
+                    <p className="result-text">Not quite!</p>
+                    <p className="result-answer">
+                      The correct answer is <strong>{result.answer}</strong>
+                    </p>
+                  </div>
+                )}
+
+                {(gameState === "correct" || gameState === "wrong") && (
+                  <button className="new-game-btn" onClick={fetchCountry}>
+                    🔄 Play Again
+                  </button>
+                )}
+              </>
             )}
           </>
         )}
+
+        {activeTab === "management" && <Management />}
       </div>
     </div>
   );
