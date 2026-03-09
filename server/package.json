@@ -1,0 +1,20 @@
+{
+  "name": "guess-the-country-server",
+  "version": "1.0.0",
+  "description": "Fastify backend for Guess The Country",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1",
+    "@fastify/cors": "^10.0.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "ts-node-dev": "^2.0.0",
+    "@types/node": "^22.13.5"
+  }
+}
