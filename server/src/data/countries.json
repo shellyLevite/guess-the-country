@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Japan",
+    "clues": [
+      "Capital is Tokyo",
+      "Famous for sushi and anime",
+      "Island nation in East Asia"
+    ]
+  },
+  {
+    "name": "Brazil",
+    "clues": [
+      "Largest country in South America",
+      "Famous for the Amazon rainforest",
+      "Hosts the world-famous Rio Carnival"
+    ]
+  },
+  {
+    "name": "Egypt",
+    "clues": [
+      "Home to the ancient pyramids",
+      "The Nile River runs through it",
+      "Capital is Cairo"
+    ]
+  },
+  {
+    "name": "Australia",
+    "clues": [
+      "Only country that is also a continent",
+      "Home to kangaroos and koalas",
+      "Capital is Canberra, not Sydney"
+    ]
+  },
+  {
+    "name": "France",
+    "clues": [
+      "Capital is Paris",
+      "Famous for the Eiffel Tower and wine",
+      "Shares borders with Spain, Italy, and Germany"
+    ]
+  },
+  {
+    "name": "Canada",
+    "clues": [
+      "Second largest country in the world by area",
+      "Known for maple syrup and ice hockey",
+      "Shares the world's longest border with the USA"
+    ]
+  },
+  {
+    "name": "India",
+    "clues": [
+      "Most populous country in the world",
+      "Home to the Taj Mahal",
+      "Capital is New Delhi"
+    ]
+  },
+  {
+    "name": "South Africa",
+    "clues": [
+      "Has three capital cities",
+      "Famous for Table Mountain in Cape Town",
+      "Nelson Mandela was its first Black president"
+    ]
+  },
+  {
+    "name": "Mexico",
+    "clues": [
+      "Capital is Mexico City",
+      "Home to ancient Aztec and Maya civilizations",
+      "Shares its northern border with the United States"
+    ]
+  },
+  {
+    "name": "Norway",
+    "clues": [
+      "Famous for its fjords",
+      "Located on the Scandinavian Peninsula",
+      "Consistently ranked among the happiest countries in the world"
+    ]
+  }
+]
