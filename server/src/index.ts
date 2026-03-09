@@ -5,9 +5,14 @@ import { countryRoutes } from "./routes/country";
 const app = Fastify({ logger: true });
 
 async function start() {
-  // Register CORS so the Vite dev server can reach the API
+  // In production ALLOWED_ORIGIN is the Vercel frontend URL
+  const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+  if (process.env.ALLOWED_ORIGIN) {
+    allowedOrigins.push(process.env.ALLOWED_ORIGIN);
+  }
+
   await app.register(cors, {
-    origin: ["http://localhost:5173"],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   });
 

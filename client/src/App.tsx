@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import ClueCard from "./components/ClueCard";
 import GuessForm from "./components/GuessForm";
+import { API } from "./api";
 import "./App.css";
 
 type GameState = "loading" | "playing" | "correct" | "wrong";
@@ -19,7 +20,7 @@ export default function App() {
     setGameState("loading");
     setResult(null);
     try {
-      const res = await fetch("/api/country");
+      const res = await fetch(API.country);
       const data = await res.json();
       setClues(data.clues);
       setGameState("playing");
@@ -34,7 +35,7 @@ export default function App() {
 
   async function handleGuess(guess: string) {
     try {
-      const res = await fetch("/api/guess", {
+      const res = await fetch(API.guess, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guess }),
