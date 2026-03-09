@@ -49,39 +49,51 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <h1>🌍 Guess The Country</h1>
+    <div className="page">
+      <div className="app">
+        <div className="app-header">
+          <h1>🌍 <span className="title-gradient">Guess The Country</span></h1>
+          <p>Read the clues and name the country</p>
+        </div>
 
-      {gameState === "loading" && <p className="status">Loading clues…</p>}
+        {gameState === "loading" && <p className="status">Loading clues…</p>}
 
-      {(gameState === "playing" ||
-        gameState === "correct" ||
-        gameState === "wrong") && (
-        <>
-          <ClueCard clues={clues} />
+        {(gameState === "playing" ||
+          gameState === "correct" ||
+          gameState === "wrong") && (
+          <>
+            <ClueCard clues={clues} />
 
-          <GuessForm
-            onSubmit={handleGuess}
-            disabled={gameState !== "playing"}
-          />
+            <GuessForm
+              onSubmit={handleGuess}
+              disabled={gameState !== "playing"}
+            />
 
-          {gameState === "correct" && (
-            <p className="result correct">✅ Correct!</p>
-          )}
+            {gameState === "correct" && (
+              <div className="result-banner correct">
+                <span className="result-icon">🎉</span>
+                <p className="result-text">Correct!</p>
+              </div>
+            )}
 
-          {gameState === "wrong" && result && (
-            <p className="result wrong">
-              ❌ Wrong. The correct answer is <strong>{result.answer}</strong>.
-            </p>
-          )}
+            {gameState === "wrong" && result && (
+              <div className="result-banner wrong">
+                <span className="result-icon">❌</span>
+                <p className="result-text">Not quite!</p>
+                <p className="result-answer">
+                  The correct answer is <strong>{result.answer}</strong>
+                </p>
+              </div>
+            )}
 
-          {(gameState === "correct" || gameState === "wrong") && (
-            <button className="new-game-btn" onClick={fetchCountry}>
-              🔄 New Game
-            </button>
-          )}
-        </>
-      )}
+            {(gameState === "correct" || gameState === "wrong") && (
+              <button className="new-game-btn" onClick={fetchCountry}>
+                🔄 Play Again
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

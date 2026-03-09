@@ -9,7 +9,8 @@ export default function ClueCard({ clues }: ClueCardProps) {
       <ul>
         {clues.map((clue, index) => (
           <li key={index}>
-            <span className="clue-number">Clue {index + 1}:</span> {clue}
+            <span className="clue-badge">{index + 1}</span>
+            {clue}
           </li>
         ))}
       </ul>
